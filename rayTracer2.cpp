@@ -5,7 +5,7 @@
 #include "camera.h"
 #include "material.h"
 #include "moving_sphere.h"
-//#include "bvh.h"
+#include "bvh.h"
 #include "texture.h"
 #include "aarect.h"
 #include "box.h"
@@ -106,9 +106,33 @@ hittable_list scene2 () {
     objects.add(make_shared<xz_rect>(-50, 50, -50, 50, 0, perlmat));
     objects.add(make_shared<xz_rect>(-3, 3, -3, 3, 6, light));
     shared_ptr<hittable> box1 = make_shared<box>(point3(-1,0,-1), point3(1,2,1), red);
-    //box1 = make_shared<rotate_y>(box1, 45);
-    box1 = make_shared<rotate_x>(box1, 20);
+    //box1 = make_shared<translate>(box1, vec3(0,1,0));
+    box1 = make_shared<rotate_y>(box1, 45);
+    box1 = make_shared<rotate_z>(box1, 45);
     objects.add(box1);
+
+    return objects;
+}
+
+hittable_list scene3 () {
+    hittable_list objects;
+
+    auto perltex = make_shared<noise_texture>(20);
+    auto perlmat = make_shared<lambertian>(perltex);
+    auto white = make_shared<lambertian>(color(.73, .73, .73));
+    auto light = make_shared<diffuse_light>(color(15, 15, 15));
+    auto red   = make_shared<lambertian>(color(.65, .05, .05));
+
+
+    objects.add(make_shared<xz_rect>(-50, 50, -50, 50, 0, perlmat));
+    objects.add(make_shared<xz_rect>(-3, 3, -3, 3, 6, light));
+    
+    // std::vector<Vertex>* vertices;
+    // vertices->push_back(Vertex(vec3(0,2,0), vec3(0,0,0)));
+    // vertices->push_back(Vertex(vec3(2,2,0), vec3(0,0,0)));
+    // vertices->push_back(Vertex(vec3(1,4,0), vec3(0,0,0)));
+
+    //objects.add(make_shared<triangle>(0, 1, 2, vertices, red));
 
     return objects;
 }
@@ -161,7 +185,7 @@ int main() {
             lookat = point3(2.78, 2.78, 0);
             vfov = 40.0;
             break;
-        
+        //default:
         case 3:
             world = cornell_box_cubes();
             aspect_ratio = 1.0;
