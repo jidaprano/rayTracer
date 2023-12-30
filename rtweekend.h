@@ -47,5 +47,6 @@ inline int random_int(int min, int max) {
 
 #include "ray.h"
 #include "vec3.h"
+#include "interval.h"
 
 #endif
