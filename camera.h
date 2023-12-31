@@ -12,6 +12,7 @@ class camera {
         double aspect_ratio = 1.0;  // Ratio of image width over height
         int    image_width  = 100;  // Rendered image width in pixel count
         int samples_per_pixel = 10;
+        int max_depth = 10;
 
         void render(const hittable& world) {
             initialize();
@@ -21,11 +22,11 @@ class camera {
             for (int j = 0; j < image_height; ++j) {
                 std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
                 for (int i = 0; i < image_width; ++i) {
-                    auto pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
-                    auto ray_direction = pixel_center - center;
-                    ray r(center, ray_direction);
-
-                    color pixel_color = ray_color(r, world);
+                    color pixel_color(0,0,0);
+                    for(int sample = 0; sample < samples_per_pixel; ++sample) {
+                        ray r = get_ray(i, j);
+                        pixel_color += ray_color(r, max_depth, world);
+                    }
                     write_color(std::cout, pixel_color, samples_per_pixel);
                 }
             }
@@ -84,11 +85,17 @@ class camera {
             return (px * pixel_delta_u) + (py * pixel_delta_v);
         }
 
-        color ray_color(const ray& r, const hittable& world) const {
+        color ray_color(const ray& r, int depth, const hittable& world) const {
             hit_record rec;
 
-            if(world.hit(r, interval(0, infinity), rec)) {
-                return 0.5 * rec.normal + color(1,1,1);
+            //If exceeded ray bounce limit, no more light simulated
+            if(depth <= 0) {
+                return color(0,0,0);
+            }
+
+            if(world.hit(r, interval(0.001, infinity), rec)) {
+                vec3 direction = rec.normal + random_unit_vector();
+                return 0.1 * ray_color(ray(rec.p, direction), depth - 1, world);
             }
 
             vec3 unit_direction = unit_vector(r.direction());

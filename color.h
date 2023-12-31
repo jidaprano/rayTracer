@@ -5,6 +5,10 @@
 
 #include <iostream>
 
+inline double linear_to_gamma(double linear_component) {
+    return sqrt(linear_component);
+}
+
 void write_color(std::ostream &out, color pixel_color, int samples_per_pixel) {
     auto r = pixel_color.x();
     auto g = pixel_color.y();
