@@ -114,10 +114,9 @@ inline vec3 unit_vector(vec3 v) {
 vec3 random_in_unit_sphere() {
     while(true) {
         auto p = vec3::random(-1.0,1.0);
-        if(p.length_squared() >= 1) {
-            continue;
+        if(p.length_squared() < 1) {
+            return p;
         }
-        return p;
     }
 }
 
@@ -126,7 +125,7 @@ vec3 random_unit_vector() {
 }
 
 vec3 random_in_hemisphere(const vec3& normal) {
-    vec3 in_unit_sphere = random_in_unit_sphere();
+    vec3 in_unit_sphere = random_unit_vector();
     if(dot(in_unit_sphere, normal) > 0.0) { //if is in the same hemisphere as normal
         return in_unit_sphere;
     } else {
