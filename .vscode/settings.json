@@ -2,5 +2,6 @@
     "files.associations": {
         "*.embeddedhtml": "html",
         "memory": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }

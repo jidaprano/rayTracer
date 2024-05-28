@@ -19,45 +19,42 @@ class material {
 };
 
 class lambertian : public material {
-    public:
-        shared_ptr<texture> albedo;
+  public:
+    lambertian(const color& albedo) : albedo(albedo) {}
 
-    public:
-        lambertian(const color& a) : albedo(make_shared<solid_color>(a)) {}
-        lambertian(shared_ptr<texture> a) : albedo(a) {}
+    bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered)
+    const override {
+        auto scatter_direction = rec.normal + random_unit_vector();
 
-        virtual bool scatter(
-            const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered
-        ) const override {
-            auto scatter_direction = rec.normal + random_unit_vector();
+        // Catch degenerate scatter direction
+        if (scatter_direction.near_zero())
+            scatter_direction = rec.normal;
 
-            //catch degenerate scatter direction
-            if(scatter_direction.near_zero()) {
-                scatter_direction = rec.normal;
-            }
+        scattered = ray(rec.p, scatter_direction);
+        attenuation = albedo;
+        return true;
+    }
 
-            scattered = ray(rec.p, scatter_direction, r_in.time());
-            attenuation = albedo -> value(rec.u, rec.v, rec.p);
-            return true;
-        }
+  private:
+    color albedo;
 };
 
 class metal : public material {
-    public:
-        color albedo;
-        double fuzz;
+  public:
+    metal(const color& albedo, double fuzz) : albedo(albedo), fuzz(fuzz < 1 ? fuzz : 1) {}
 
-    public:
-        metal(const color& a, double f) : albedo(a), fuzz(f < 1? f : 1) {}
+    bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered)
+    const override {
+        vec3 reflected = reflect(r_in.direction(), rec.normal);
+        reflected = unit_vector(reflected) + (fuzz * random_unit_vector());
+        scattered = ray(rec.p, reflected);
+        attenuation = albedo;
+        return (dot(scattered.direction(), rec.normal) > 0);
+    }
 
-        virtual bool scatter(
-            const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered 
-        ) const override {
-            vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
-            scattered = ray(rec.p, reflected + fuzz * random_in_unit_sphere(), r_in.time());
-            attenuation = albedo;
-            return (dot(scattered.direction(), rec.normal) > 0);
-        }
+  private:
+    color albedo;
+    double fuzz;
 };
 
 class dielectric : public material {
